@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>daily report · pro · graphs · password popup · course dropdown</title>
+    <!-- Chart.js for monthly graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* ===== RESET & GLOBAL ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0a1929 0%, #0b1e2f 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px 16px;
+            animation: bgPulse 10s infinite alternate ease-in-out;
+        }
+
+        @keyframes bgPulse {
+            0% { background: linear-gradient(145deg, #0a1929, #0b1e2f); }
+            100% { background: linear-gradient(145deg, #0c2238, #0d2b40); }
+        }
+
+        .container {
+            max-width: 1600px;
+            width: 100%;
+            background: rgba(10, 25, 41, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 48px;
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06) inset;
+            padding: 28px 24px 36px;
+            animation: containerGlow 3s infinite alternate, slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            0% { transform: translateY(30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes containerGlow {
+            0% { box-shadow: 0 30px 60px -20px #000, 0 0 0 1px rgba(0,160,255,0.1) inset; }
+            100% { box-shadow: 0 40px 70px -15px #0055aa, 0 0 0 2px rgba(0,180,255,0.2) inset; }
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: clamp(1.8rem, 5vw, 2.4rem);
+            letter-spacing: -0.02em;
+            color: #fff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding-bottom: 16px;
+            border-bottom: 2px solid rgba(0,160,255,0.3);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        h1 span {
+            background: #0a4a8a;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 5px 18px;
+            border-radius: 60px;
+            white-space: nowrap;
+            box-shadow: 0 0 15px #0077ff;
+            animation: badgePulse 2s infinite;
+        }
+
+        @keyframes badgePulse {
+            0% { box-shadow: 0 0 5px #0077ff; }
+            50% { box-shadow: 0 0 20px #00aaff; }
+            100% { box-shadow: 0 0 5px #0077ff; }
+        }
+
+        /* ===== TOP BALANCE CARD ===== */
+        .balance-card {
+            background: linear-gradient(135deg, #000000, #001c3d, #003366);
+            color: white;
+            border-radius: 44px;
+            padding: 22px 28px;
+            margin-bottom: 32px;
+            box-shadow: 0 20px 40px -16px #000, 0 0 0 1px #0077ff66 inset;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            transition: all 0.4s;
+            animation: balanceGlow 3s infinite alternate;
+        }
+
+        @keyframes balanceGlow {
+            0% { box-shadow: 0 20px 40px -16px #000, 0 0 0 1px #0077ff33 inset; }
+            100% { box-shadow: 0 30px 60px -12px #0044aa, 0 0 0 3px #00aaff inset; }
+        }
+
+        .balance-card:hover {
+            transform: scale(1.01) translateY(-4px);
+            box-shadow: 0 35px 60px -10px #0044aa;
+        }
+
+        .balance-left h3 {
+            font-weight: 400;
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 6px;
+        }
+
+        .balance-amount {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 700;
+            line-height: 1.2;
+            text-shadow: 0 0 20px #00aaff;
+        }
+
+        .balance-details {
+            display: flex;
+            gap: clamp(20px, 4vw, 50px);
+            flex-wrap: wrap;
+        }
+
+        .balance-item span {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .balance-item strong {
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            font-weight: 500;
+        }
+
+        /* ===== 2‑COLUMN GRID ===== */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+
+        /* ===== SECTION CARDS ===== */
+        .section {
+            background: rgba(0, 15, 30, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 40px;
+            padding: 22px 20px;
+            box-shadow: 0 12px 28px -10px #000, 0 0 0 1px #0077ff33 inset;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            animation: cardFadeIn 0.6s ease-out backwards;
+            border-left: 5px solid #0077ff;
+        }
+
+        .section:nth-child(1) { animation-delay: 0.1s; }
+        .section:nth-child(2) { animation-delay: 0.2s; }
+
+        @keyframes cardFadeIn {
+            0% { opacity: 0; transform: translateX(-20px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
+        .section:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 25px 40px -8px #0044aa, 0 0 0 2px #00aaff inset;
+            background: rgba(0, 20, 40, 0.8);
+        }
+
+        .income-section { border-left: 5px solid #1b8c5e; }
+        .expense-section { border-left: 5px solid #c7454a; }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+        .section-header h2 {
+            font-weight: 600;
+            font-size: 1.7rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: white;
+            text-shadow: 0 2px 5px black;
+        }
+        .income-section .section-header h2 { color: #8bc34a; }
+        .expense-section .section-header h2 { color: #ff6b6b; }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #88ccff;
+            padding: 0 10px;
+            transition: 0.2s;
+            line-height: 1;
+            text-shadow: 0 0 8px blue;
+        }
+        .toggle-btn:hover { color: white; transform: scale(1.2) rotate(180deg); }
+
+        /* ===== FORM GRID (consistent 2 columns) ===== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px 18px;
+            border-radius: 32px;
+            margin-bottom: 16px;
+            border: 1px solid #0077ff33;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-field label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #aaccff;
+            margin-left: 4px;
+            margin-bottom: 4px;
+        }
+
+        .form-field input,
+        .form-field select {
+            padding: 12px 16px;
+            border: none;
+            background: #0a1a2a;
+            border-radius: 26px;
+            font-size: 0.9rem;
+            border: 1px solid #0055aa;
+            transition: 0.2s;
+            width: 100%;
+            color: white;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            outline: none;
+            border-color: #00aaff;
+            box-shadow: 0 0 0 4px #0077ff40, 0 0 20px #0077ff;
+            transform: scale(1.02);
+        }
+
+        /* Fields that span both columns */
+        .form-field.full-width {
+            grid-column: span 2;
+        }
+
+        /* Action row (button container) below the grid */
+        .action-row {
+            display: flex;
+            justify-content: center;
+            margin-top: 8px;
+            margin-bottom: 12px;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            border: 1px solid #ffffff20;
+            box-shadow: 0 5px 15px #00000050;
+        }
+
+        .btn-income {
+            background: linear-gradient(145deg, #0a4a2a, #0e6b3a);
+            color: white;
+        }
+        .btn-income:hover {
+            background: linear-gradient(145deg, #0e6b3a, #128c4a);
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 10px 25px #00aa55;
+        }
+        .btn-income:active { transform: scale(0.98); }
+
+        .btn-expense {
+            background: linear-gradient(145deg, #6b1a1a, #a02a2a);
+            color: white;
+        }
+        .btn-expense:hover {
+            background: linear-gradient(145deg, #a02a2a, #c53a3a);
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 10px 25px #ff5555;
+        }
+        .btn-expense:active { transform: scale(0.98); }
+
+        .btn-edit-icon {
+            background: #0a1a2a;
+            border: 1px solid #0077ff;
+            color: #88ccff;
+            font-size: 1.2rem;
+            padding: 6px 10px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.15s;
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-edit-icon:hover {
+            background: #003366;
+            color: white;
+            transform: rotate(15deg) scale(1.15);
+            border-color: #00aaff;
+            box-shadow: 0 0 20px #0077ff;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            background: #0a1a2a;
+            color: #aaccff;
+            border: 1px solid #0077ff;
+        }
+        .btn-small:hover {
+            background: #002244;
+            color: white;
+            box-shadow: 0 0 15px #0077ff;
+        }
+
+        /* ===== POPUPS ===== */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.2s;
+        }
+        .popup-card {
+            background: #0a1a2a;
+            border-radius: 40px;
+            padding: 30px;
+            width: 360px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 60px #000, 0 0 0 2px #0077ff inset;
+            text-align: center;
+            color: white;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .popup-card h3 { color: #88ccff; margin-bottom: 20px; }
+        .popup-card input,
+        .popup-card select {
+            width: 100%;
+            padding: 14px;
+            background: #001122;
+            border: 1px solid #0077ff;
+            border-radius: 30px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            color: white;
+        }
+        .popup-card select option { background: #0a1a2a; }
+
+        /* ===== EDIT POPUP FIELDS CONTAINER ===== */
+        #editPopupFields {
+            text-align: left;
+            margin-bottom: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .edit-field {
+            margin-bottom: 16px;
+        }
+        .edit-field label {
+            display: block;
+            font-size: 0.8rem;
+            color: #aaccff;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .edit-field input,
+        .edit-field select {
+            width: 100%;
+            padding: 12px 16px;
+            background: #001122;
+            border: 1px solid #0077ff;
+            border-radius: 30px;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        /* ===== SEARCH BAR ===== */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .search-bar input {
+            flex: 1 1 180px;
+            padding: 10px 16px;
+            background: #0a1a2a;
+            border: 1px solid #0077ff;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            color: white;
+        }
+        .search-bar .btn {
+            padding: 8px 16px;
+        }
+
+        /* ===== TABLES WITH SCROLL ===== */
+        .table-wrapper {
+            width: 100%;
+            overflow: auto;
+            border-radius: 24px;
+            transition: max-height 0.4s ease, opacity 0.3s;
+            max-height: 420px;
+            opacity: 1;
+        }
+        .table-wrapper.hidden {
+            max-height: 0;
+            opacity: 0;
+            margin: 0;
+            pointer-events: none;
+        }
+
+        .entries-table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 0 6px;
+        }
+
+        .entries-table th {
+            text-align: center;
+            padding: 10px 8px 6px 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #aaccff;
+            border-bottom: 1px solid #0077ff66;
+            background: rgba(0, 15, 30, 0.9);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .entries-table td {
+            background: rgba(0, 10, 20, 0.8);
+            padding: 14px 8px;
+            border-radius: 18px;
+            box-shadow: 0 2px 8px #00000080, 0 0 0 1px #0077ff33 inset;
+            font-weight: 450;
+            color: #eef5ff;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            animation: rowFade 0.3s ease;
+        }
+        @keyframes rowFade {
+            0% { opacity: 0.4; transform: translateY(6px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .entries-table td:hover {
+            background: #002244;
+            box-shadow: 0 0 20px #0077ff, 0 0 0 2px #00aaff inset;
+            transform: scale(1.01);
+        }
+
+        /* ===== SUMMARY CARDS SECTION ===== */
+        .summary-section {
+            margin-top: 36px;
+            background: rgba(0, 15, 30, 0.5);
+            backdrop-filter: blur(4px);
+            border-radius: 44px;
+            padding: 24px 22px;
+            border: 1px solid #0077ff33;
+        }
+        .summary-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .summary-card {
+            background: linear-gradient(145deg, #001c3d, #002856);
+            border-radius: 28px;
+            padding: 18px 20px;
+            flex: 1 1 160px;
+            min-width: 140px;
+            box-shadow: 0 10px 20px -8px black, 0 0 0 1px #0077ff66 inset;
+            text-align: center;
+            color: white;
+            transition: 0.2s;
+        }
+        .summary-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px -6px #0044aa, 0 0 0 2px #00aaff inset;
+        }
+        .summary-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #aaccff;
+            margin-bottom: 8px;
+        }
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .summary-sub {
+            font-size: 0.75rem;
+            color: #88ccff;
+            margin-top: 4px;
+        }
+
+        /* ===== GRAPH SECTION ===== */
+        .graph-section {
+            margin-top: 36px;
+            background: rgba(0, 15, 30, 0.5);
+            backdrop-filter: blur(4px);
+            border-radius: 44px;
+            padding: 24px 22px;
+            border: 1px solid #0077ff33;
+        }
+        .graph-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .graph-header h2 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 500;
+            text-shadow: 0 2px 5px black;
+        }
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-group label {
+            color: #aaccff;
+            font-size: 0.9rem;
+        }
+        .filter-group select {
+            background: #0a1a2a;
+            border: 1px solid #0077ff;
+            border-radius: 30px;
+            padding: 8px 20px;
+            color: white;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .chart-card {
+            background: rgba(0,0,0,0.4);
+            border-radius: 32px;
+            padding: 18px 16px;
+            border: 1px solid #0077ff33;
+        }
+        .chart-card canvas {
+            width: 100% !important;
+            height: auto !important;
+            max-height: 280px;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-field.full-width { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>
+        📋 DAILY REPORT SYSTEM
+        <span>hover shows receipt · password popup · scroll tables</span>
+    </h1>
+
+    <!-- BALANCE CARD -->
+    <div class="balance-card">
+        <div class="balance-left">
+            <h3>📊 TOTAL BALANCE</h3>
+            <div class="balance-amount" id="totalBalance">₹ 0</div>
+        </div>
+        <div class="balance-details">
+            <div class="balance-item">
+                <span>Debit Amt</span>
+                <strong id="totalIncome">₹ 0</strong>
+            </div>
+            <div class="balance-item">
+                <span>Credit Amt</span>
+                <strong id="totalExpense">₹ 0</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- TWO COLUMN SECTIONS -->
+    <div class="dashboard">
+        <!-- INCOME SECTION -->
+        <div class="section income-section">
+            <div class="section-header">
+                <h2>💰 INCOME</h2>
+                <button class="toggle-btn" id="toggleIncomeBtn" onclick="toggleTable('income')">▼</button>
+            </div>
+            <!-- 2‑column grid for inputs -->
+            <div class="form-grid">
+                <div class="form-field">
+                    <label>NAME</label>
+                    <input type="text" id="incomeDesc" placeholder="e.g. Student name" autocomplete="off">
+                </div>
+                <div class="form-field">
+                    <label>AMOUNT (₹)</label>
+                    <input type="number" id="incomeAmount" placeholder="0.00" onblur="showReceiptPopup()">
+                </div>
+                <div class="form-field">
+                    <label>DATE</label>
+                    <input type="date" id="incomeDate" value="2025-03-23">
+                </div>
+                <div class="form-field">
+                    <label>PAYMENT</label>
+                    <select id="incomePayment">
+                        <option value="Online">💳 Online</option>
+                        <option value="Offline">💵 Offline</option>
+                    </select>
+                </div>
+                <div class="form-field full-width">
+                    <label>INCOME TYPE</label>
+                    <select id="incomeType">
+                        <option value="Student fees">🎓 Student fees</option>
+                        <option value="Hardware">🖥️ Hardware</option>
+                        <option value="Other">📌 Other</option>
+                        <option value="Student Admission">📋 Student Admission</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Button row below grid -->
+            <div class="action-row">
+                <button class="btn btn-income" onclick="handleAddIncome()">➕ ADD INCOME</button>
+            </div>
+
+            <!-- Date search bar -->
+            <div class="search-bar">
+                <input type="date" id="searchIncomeDate">
+                <button class="btn btn-small" onclick="filterIncomeByDate()">🔍 Search</button>
+                <button class="btn btn-small" onclick="clearIncomeFilter()">Clear</button>
+            </div>
+
+            <!-- Income table (scrollable) -->
+            <div id="incomeTableWrapper" class="table-wrapper">
+                <table class="entries-table">
+                    <thead><tr><th>Name</th><th>Amount</th><th>Date</th><th>Payment</th><th>Type</th><th>Action</th></tr></thead>
+                    <tbody id="incomeList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- EXPENSE SECTION -->
+        <div class="section expense-section">
+            <div class="section-header">
+                <h2>💸 EXPENSE</h2>
+                <button class="toggle-btn" id="toggleExpenseBtn" onclick="toggleTable('expense')">▼</button>
+            </div>
+            <!-- 2‑column grid for inputs -->
+            <div class="form-grid">
+                <div class="form-field">
+                    <label>EXPENSE TYPE</label>
+                    <select id="expenseType">
+                        <option value="Class expenses">📚 Class expenses</option>
+                        <option value="Staff exp">👥 Staff exp</option>
+                        <option value="Other exp">📦 Other exp</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>PERSON</label>
+                    <input type="text" id="expensePerson" placeholder="name">
+                </div>
+                <div class="form-field">
+                    <label>DESCRIPTION</label>
+                    <input type="text" id="expenseDesc" placeholder="item / detail">
+                </div>
+                <div class="form-field">
+                    <label>AMOUNT (₹)</label>
+                    <input type="number" id="expenseAmount" placeholder="0.00">
+                </div>
+                <div class="form-field">
+                    <label>DATE</label>
+                    <input type="date" id="expenseDate" value="2025-03-23">
+                </div>
+                <div class="form-field"><!-- empty placeholder for grid alignment --></div>
+            </div>
+            <!-- Button row below grid -->
+            <div class="action-row">
+                <button class="btn btn-expense" onclick="addExpense()">➕ ADD EXPENSE</button>
+            </div>
+
+            <div class="search-bar">
+                <input type="date" id="searchExpenseDate">
+                <button class="btn btn-small" onclick="filterExpenseByDate()">🔍 Search</button>
+                <button class="btn btn-small" onclick="clearExpenseFilter()">Clear</button>
+            </div>
+
+            <!-- Expense table (scrollable) -->
+            <div id="expenseTableWrapper" class="table-wrapper">
+                <table class="entries-table">
+                    <thead><tr><th>Type</th><th>Person</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead>
+                    <tbody id="expenseList"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMISSIONS TABLE (scrollable) -->
+    <div class="admissions-section">
+        <div class="section-header">
+            <h2>📋 STUDENT ADMISSIONS</h2>
+            <button class="toggle-btn" id="toggleAdmissionBtn" onclick="toggleTable('admission')">▼</button>
+        </div>
+        <div class="search-bar">
+            <input type="date" id="searchAdmissionDate">
+            <button class="btn btn-small" onclick="filterAdmissionByDate()">🔍 Search</button>
+            <button class="btn btn-small" onclick="clearAdmissionFilter()">Clear</button>
+        </div>
+        <div id="admissionTableWrapper" class="table-wrapper">
+            <table class="entries-table">
+                <thead><tr><th>Student Name</th><th>Course</th><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody id="admissionList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== SUMMARY CARDS WITH FILTER ===== -->
+    <div class="summary-section">
+        <div class="section-header">
+            <h2>📊 SUMMARY REPORT</h2>
+            <div class="filter-group" style="gap: 8px;">
+                <select id="summaryFilterType">
+                    <option value="date">Date</option>
+                    <option value="month">Month</option>
+                    <option value="year">Year</option>
+                </select>
+                <input type="date" id="summaryFilterDate" style="display: inline-block;">
+                <input type="month" id="summaryFilterMonth" style="display: none;">
+                <input type="number" id="summaryFilterYear" placeholder="YYYY" style="display: none;" min="2000" max="2100">
+                <button class="btn btn-small" onclick="applySummaryFilter()">Apply</button>
+                <button class="btn btn-small" onclick="clearSummaryFilter()">Clear</button>
+            </div>
+        </div>
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="summary-label">📋 Total Admissions</div>
+                <div class="summary-value" id="summaryTotalAdmissions">0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">💳 Online</div>
+                <div class="summary-value" id="summaryOnlineAmount">₹ 0</div>
+                <div class="summary-sub" id="summaryOnlineCount">(0)</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">💵 Offline</div>
+                <div class="summary-value" id="summaryOfflineAmount">₹ 0</div>
+                <div class="summary-sub" id="summaryOfflineCount">(0)</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">💰 Total Collection</div>
+                <div class="summary-value" id="summaryTotalCollection">₹ 0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">💸 Total Expenses</div>
+                <div class="summary-value" id="summaryTotalExpenses">₹ 0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRAPH SECTION (monthly + filter) -->
+    <div class="graph-section">
+        <div class="graph-header">
+            <h2>📈 MONTHLY OVERVIEW</h2>
+            <div class="filter-group">
+                <label for="expenseTypeFilter">Filter expense by type:</label>
+                <select id="expenseTypeFilter" onchange="onExpenseTypeFilterChange()">
+                    <option value="ALL">All expenses</option>
+                </select>
+            </div>
+        </div>
+        <div class="chart-grid">
+            <div class="chart-card">
+                <canvas id="incomeChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUPS -->
+    <div id="receiptPopup" class="popup-overlay">
+        <div class="popup-card">
+            <h3>📄 Enter Receipt Number</h3>
+            <input type="text" id="receiptNumberInput" placeholder="Receipt no.">
+            <div><button class="btn btn-income" onclick="saveReceipt()">Save</button><button class="btn btn-expense" onclick="closeReceiptPopup()">Cancel</button></div>
+        </div>
+    </div>
+
+    <!-- Admission popup with 30+ course dropdown -->
+    <div id="admissionPopup" class="popup-overlay">
+        <div class="popup-card">
+            <h3>🎓 Student Admission Details</h3>
+            <input type="text" id="studentName" placeholder="Student Name">
+            <select id="courseSelect">
+                <option value="">-- Select Course --</option>
+                <option value="MS-CIT">MS-CIT</option><option value="MS-Office">MS-Office</option><option value="Tally ERP">Tally ERP</option>
+                <option value="Python Programming">Python Programming</option><option value="Java Programming">Java Programming</option>
+                <option value="C/C++">C/C++</option><option value="Web Development">Web Development</option><option value="Android Development">Android Development</option>
+                <option value="Data Science">Data Science</option><option value="Machine Learning">Machine Learning</option><option value="Cloud Computing">Cloud Computing</option>
+                <option value="Cyber Security">Cyber Security</option><option value="Digital Marketing">Digital Marketing</option><option value="Graphic Design">Graphic Design</option>
+                <option value="AutoCAD">AutoCAD</option><option value="3D Animation">3D Animation</option><option value="Video Editing">Video Editing</option>
+                <option value="English Speaking">English Speaking</option><option value="IELTS">IELTS</option><option value="German Language">German Language</option>
+                <option value="French Language">French Language</option><option value="Japanese Language">Japanese Language</option><option value="Spoken English">Spoken English</option>
+                <option value="Personality Development">Personality Development</option><option value="Yoga Teacher Training">Yoga Teacher Training</option>
+                <option value="Fitness Trainer">Fitness Trainer</option><option value="Cooking Classes">Cooking Classes</option><option value="Tailoring">Tailoring</option>
+                <option value="Beauty Parlour">Beauty Parlour</option><option value="Mehendi Design">Mehendi Design</option><option value="Other">Other</option>
+            </select>
+            <div><button class="btn btn-income" onclick="saveAdmissionDetails()">Save</button><button class="btn btn-expense" onclick="closeAdmissionPopup()">Cancel</button></div>
+        </div>
+    </div>
+
+    <!-- PASSWORD POPUP for edit (no longer used, but kept for compatibility) -->
+    <div id="passwordPopup" class="popup-overlay">
+        <div class="popup-card">
+            <h3>🔒 Enter Password</h3>
+            <input type="password" id="passwordInput" placeholder="password (info23)">
+            <div>
+                <button class="btn btn-income" onclick="checkPasswordAndProceed()">Submit</button>
+                <button class="btn btn-expense" onclick="closePasswordPopup()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW EDIT POPUP (dynamic fields) -->
+    <div id="editPopup" class="popup-overlay">
+        <div class="popup-card">
+            <h3 id="editPopupTitle">Edit Entry</h3>
+            <div id="editPopupFields"></div>
+            <div>
+                <button class="btn btn-income" onclick="saveEdit()">Save</button>
+                <button class="btn btn-expense" onclick="closeEditPopup()">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- data arrays ----------
+        let incomes = [];
+        let expenses = [];
+
+        // Filtered copies
+        let filteredIncomes = null;
+        let filteredExpenses = null;
+        let filteredAdmissions = null;
+
+        // Toggle states
+        let incomeTableVisible = true, expenseTableVisible = true, admissionTableVisible = true;
+
+        // Editing IDs
+        let editingIncomeId = null, editingExpenseId = null;
+        let currentEditMode = null; // 'income' or 'expense'
+        let currentEditData = null; // store the entry being edited
+
+        // Temporary admission data
+        let pendingAdmission = { studentName: '', course: '', date: '', amount: 0, desc: '', payment: 'Online', type: '', receipt: '' };
+
+        // Chart instances
+        let incomeChart, expenseChart;
+
+        // Current expense type filter value
+        let currentExpenseTypeFilter = 'ALL';
+
+        // Summary filter state
+        let summaryFilterType = 'date';
+        let summaryFilterValue = '';
+
+        // ---------- load & save ----------
+        function loadFromStorage() {
+            try {
+                const inc = localStorage.getItem('pro_v12_income');
+                const exp = localStorage.getItem('pro_v12_expense');
+                if (inc) incomes = JSON.parse(inc);
+                if (exp) expenses = JSON.parse(exp);
+            } catch (e) {
+                console.error('Error loading from storage', e);
+            }
+        }
+        function saveToStorage() {
+            localStorage.setItem('pro_v12_income', JSON.stringify(incomes));
+            localStorage.setItem('pro_v12_expense', JSON.stringify(expenses));
+        }
+
+        // ---------- helpers ----------
+        function formatDate(isoDate) {
+            if (!isoDate) return '';
+            const parts = isoDate.split('-');
+            if (parts.length !== 3) return isoDate;
+            const year = parts[0].slice(-2);
+            const month = parseInt(parts[1], 10);
+            const day = parseInt(parts[2], 10);
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return day + '-' + monthNames[month-1] + '-' + year;
+        }
+        const formatCurr = (val) => '₹ ' + val.toFixed(2);
+
+        // ---------- password popup functions (kept but not used for edit) ----------
+        window.showPasswordPopup = function(callback) {
+            const popup = document.getElementById('passwordPopup');
+            if (!popup) {
+                alert('Password popup not found!');
+                return;
+            }
+            // Not used for edit anymore
+        };
+        window.closePasswordPopup = function() {
+            document.getElementById('passwordPopup').style.display = 'none';
+        };
+        window.checkPasswordAndProceed = function() {
+            // Not used
+        };
+
+        // ---------- edit popup functions ----------
+        function openEditPopup() {
+            const popup = document.getElementById('editPopup');
+            if (!popup) {
+                alert('Edit popup not found!');
+                return;
+            }
+            popup.style.display = 'flex';
+        }
+
+        window.closeEditPopup = function() {
+            document.getElementById('editPopup').style.display = 'none';
+            currentEditMode = null;
+            currentEditData = null;
+        };
+
+        // Build edit popup fields based on mode
+        function buildEditFields() {
+            const container = document.getElementById('editPopupFields');
+            if (!container) {
+                alert('Edit fields container not found!');
+                return;
+            }
+            container.innerHTML = '';
+            try {
+                if (currentEditMode === 'income') {
+                    document.getElementById('editPopupTitle').textContent = 'Edit Income';
+                    // Description
+                    let field = document.createElement('div');
+                    field.className = 'edit-field';
+                    field.innerHTML = '<label>Description</label><input type="text" id="editDesc" value="' + (currentEditData.description || '') + '">';
+                    container.appendChild(field);
+                    // Amount
+                    field = document.createElement('div');
+                    field.className = 'edit-field';
+                    field.innerHTML = '<label>Amount (₹)</label><input type="number" id="editAmount" value="' + currentEditData.amount + '">';
+                    container.appendChild(field);
+                    // Date
+                    field = document.createElement('div');
+                    field.className = 'edit-field';
+                    field.innerHTML = '<label>Date</label><input type="date" id="editDate" value="' + (currentEditData.date || '') + '">';
+                    container.appendChild(field);
+                    // Payment Method
+                    field = document.createElement('div');
+                    field.className = 'edit-field';
+                    field.innerHTML = '<label>Payment</label><select id="editPayment"><option value="Online">Online</option><option value="Offline">Offline</option></select>';
+                    container.appendChild(field);
+                    document.getElementById('editPayment').value = currentEditData.paymentMethod || 'Online';
+                    // Income Type
+                    field = document.createElement('div');
+                    field.className = 'edit-field';
+                    field.innerHTML = '<label>Income Type</label><select id="editIncomeType"><option value="Student fees">Student fees</option><option value="Hardware">Hardware</option><option value="Other">Other</option><option value="Student Admission">Student Admission</option></select>';
+                    container.appendChild(field);
+                    document.getElementById('editIncomeType').value = currentEditData.incomeType || 'Student fees';
+                    // If it's an admission, show extra fields
+                    if (currentEditData.incomeType === 'Student Admission') {
+                        field = document.createElement('div');
+                        field.className = 'edit-field';
+                        field.innerHTML = '<label>Student Name</label><input type="text" id="editStudentName" value="' + (currentEditData.studentName || '') + '">';
+                        container.appendChild(field);
+                        field = document.createElement('div');
+                        field.className = 'edit-field';
+                        field.innerHTML = '<label>Course</label><select id="editCourse">' + document.getElementById('courseSelect').innerHTML + '</select>';
+                        container.appendChild(field);
+                        document.getElementById('editCourse').value = currentEditData.course || '';
+                    }
+                    // Receipt
+                    field = document.createElement('div');
+                    field.className = 'edit-field';
+                    field.innerHTML = '<label>Receipt Number</label><input type="text" id="editReceipt" value="' + (currentEditData.receiptNumber || '') + '">';
+                    container.appendChild(field);
+                } else if (currentEditMode === 'expense') {
+                    document.getElementById('editPopupTitle').textContent = 'Edit Expense';
+                    // Expense Type
+                    let field = document.createElement('div');
+                    field.className = 'edit-field';
+                    field.innerHTML = '<label>Expense Type</label><select id="editExpenseType"><option value="Class expenses">Class expenses</option><option value="Staff exp">Staff exp</option><option value="Other exp">Other exp</option></select>';
+                    container.appendChild(field);
+                    document.getElementById('editExpenseType').value = currentEditData.expenseType || 'Class expenses';
+                    // Person
+                    field = document.createElement('div');
+                    field.className = 'edit-field';
+                    field.innerHTML = '<label>Person</label><input type="text" id="editPerson" value="' + (currentEditData.person || '') + '">';
+                    container.appendChild(field);
+                    // Description
+                    field = document.createElement('div');
+                    field.className = 'edit-field';
+                    field.innerHTML = '<label>Description</label><input type="text" id="editDesc" value="' + (currentEditData.description || '') + '">';
+                    container.appendChild(field);
+                    // Amount
+                    field = document.createElement('div');
+                    field.className = 'edit-field';
+                    field.innerHTML = '<label>Amount (₹)</label><input type="number" id="editAmount" value="' + currentEditData.amount + '">';
+                    container.appendChild(field);
+                    // Date
+                    field = document.createElement('div');
+                    field.className = 'edit-field';
+                    field.innerHTML = '<label>Date</label><input type="date" id="editDate" value="' + (currentEditData.date || '') + '">';
+                    container.appendChild(field);
+                }
+            } catch (e) {
+                alert('Error building edit fields: ' + e.message);
+                console.error(e);
+            }
+        }
+
+        window.saveEdit = function() {
+            try {
+                if (currentEditMode === 'income') {
+                    // Get values
+                    const updated = {
+                        id: editingIncomeId,
+                        description: document.getElementById('editDesc').value.trim(),
+                        amount: parseFloat(document.getElementById('editAmount').value),
+                        date: document.getElementById('editDate').value,
+                        paymentMethod: document.getElementById('editPayment').value,
+                        incomeType: document.getElementById('editIncomeType').value,
+                        receiptNumber: document.getElementById('editReceipt').value.trim()
+                    };
+                    if (updated.incomeType === 'Student Admission') {
+                        const studentNameEl = document.getElementById('editStudentName');
+                        const courseEl = document.getElementById('editCourse');
+                        updated.studentName = studentNameEl ? studentNameEl.value.trim() : '';
+                        updated.course = courseEl ? courseEl.value : '';
+                    }
+                    if (!updated.description || isNaN(updated.amount) || updated.amount <= 0 || !updated.date) {
+                        alert('Please fill all fields correctly');
+                        return;
+                    }
+                    // Replace in array
+                    const index = incomes.findIndex(i => i.id === editingIncomeId);
+                    if (index !== -1) {
+                        incomes[index] = { ...incomes[index], ...updated };
+                    }
+                    editingIncomeId = null;
+                } else if (currentEditMode === 'expense') {
+                    const updated = {
+                        id: editingExpenseId,
+                        expenseType: document.getElementById('editExpenseType').value,
+                        person: document.getElementById('editPerson').value.trim(),
+                        description: document.getElementById('editDesc').value.trim(),
+                        amount: parseFloat(document.getElementById('editAmount').value),
+                        date: document.getElementById('editDate').value
+                    };
+                    if (!updated.person || !updated.description || isNaN(updated.amount) || updated.amount <= 0 || !updated.date) {
+                        alert('Please fill all fields correctly');
+                        return;
+                    }
+                    const index = expenses.findIndex(e => e.id === editingExpenseId);
+                    if (index !== -1) {
+                        expenses[index] = { ...expenses[index], ...updated };
+                    }
+                    editingExpenseId = null;
+                }
+                saveToStorage();
+                // Clear filters and refresh
+                filteredIncomes = null;
+                filteredExpenses = null;
+                filteredAdmissions = null;
+                document.getElementById('searchIncomeDate').value = '';
+                document.getElementById('searchExpenseDate').value = '';
+                document.getElementById('searchAdmissionDate').value = '';
+                updateExpenseTypeFilter();
+                applyExpenseFilters();
+                updateDisplay();
+                closeEditPopup();
+            } catch (e) {
+                alert('Error saving edit: ' + e.message);
+                console.error(e);
+            }
+        };
+
+        // ---------- edit functions (direct, no password) ----------
+        window.editIncome = function(id) {
+            console.log('editIncome called with id', id);
+            const inc = incomes.find(i => i.id === id);
+            if (!inc) {
+                alert('Income entry not found!');
+                return;
+            }
+            editingIncomeId = id;
+            currentEditMode = 'income';
+            currentEditData = { ...inc };
+            buildEditFields();
+            openEditPopup();
+        };
+
+        window.editExpense = function(id) {
+            console.log('editExpense called with id', id);
+            const exp = expenses.find(e => e.id === id);
+            if (!exp) {
+                alert('Expense entry not found!');
+                return;
+            }
+            editingExpenseId = id;
+            currentEditMode = 'expense';
+            currentEditData = { ...exp };
+            buildEditFields();
+            openEditPopup();
+        };
+
+        // ---------- popup functions (receipt, admission) ----------
+        window.showReceiptPopup = function() {
+            if (document.getElementById('incomeAmount').value.trim() !== '')
+                document.getElementById('receiptPopup').style.display = 'flex';
+        };
+        window.closeReceiptPopup = function() { document.getElementById('receiptPopup').style.display = 'none'; };
+        window.saveReceipt = function() {
+            pendingAdmission.receipt = document.getElementById('receiptNumberInput').value.trim();
+            closeReceiptPopup();
+        };
+        window.showAdmissionPopup = function() {
+            document.getElementById('admissionPopup').style.display = 'flex';
+            document.getElementById('studentName').value = pendingAdmission.studentName;
+            document.getElementById('courseSelect').value = pendingAdmission.course;
+        };
+        window.closeAdmissionPopup = function() { document.getElementById('admissionPopup').style.display = 'none'; };
+        window.saveAdmissionDetails = function() {
+            pendingAdmission.studentName = document.getElementById('studentName').value.trim();
+            pendingAdmission.course = document.getElementById('courseSelect').value;
+            closeAdmissionPopup();
+            finalizeAddIncome();
+        };
+
+        // ---------- render tables with title attributes for amount ----------
+        function updateIncomeTable() {
+            const tbody = document.getElementById('incomeList');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            let data = filteredIncomes !== null ? filteredIncomes : incomes;
+            if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">—— no entries ——</td></tr>'; return; }
+            data.slice().reverse().forEach(inc => {
+                const row = tbody.insertRow();
+                const descCell = row.insertCell(); descCell.textContent = inc.description || '—';
+                const amtCell = row.insertCell(); amtCell.textContent = formatCurr(inc.amount);
+                const dateCell = row.insertCell(); dateCell.textContent = formatDate(inc.date);
+                const payCell = row.insertCell(); payCell.textContent = inc.paymentMethod || '—';
+                const typeCell = row.insertCell(); typeCell.textContent = inc.incomeType || '—';
+                const actionCell = row.insertCell(); 
+                actionCell.innerHTML = `<button class="btn-edit-icon" onclick="editIncome('${inc.id}')" title="Edit">✏️</button>`;
+
+                let titleText = formatCurr(inc.amount);
+                if (inc.receiptNumber) titleText += ' | Receipt: ' + inc.receiptNumber;
+                if (inc.incomeType === 'Student Admission' && inc.studentName) {
+                    titleText += ' | Student: ' + inc.studentName + ' | Course: ' + inc.course;
+                }
+                amtCell.setAttribute('title', titleText);
+
+                if (inc.description) descCell.setAttribute('title', inc.description);
+                if (inc.date) dateCell.setAttribute('title', inc.date);
+                if (inc.paymentMethod) payCell.setAttribute('title', inc.paymentMethod);
+                let typeTitle = inc.incomeType;
+                if (inc.incomeType === 'Student Admission' && inc.studentName) {
+                    typeTitle = `Admission: ${inc.studentName} (${inc.course})`;
+                }
+                typeCell.setAttribute('title', typeTitle);
+            });
+        }
+
+        function updateExpenseTable() {
+            const tbody = document.getElementById('expenseList');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            let data = filteredExpenses !== null ? filteredExpenses : expenses;
+            if (!data.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">—— no entries ——</td></tr>'; return; }
+            data.slice().reverse().forEach(exp => {
+                const row = tbody.insertRow();
+                const typeCell = row.insertCell(); typeCell.textContent = exp.expenseType || '—';
+                const personCell = row.insertCell(); personCell.textContent = exp.person || '—';
+                const amtCell = row.insertCell(); amtCell.textContent = formatCurr(exp.amount);
+                const dateCell = row.insertCell(); dateCell.textContent = formatDate(exp.date);
+                const actionCell = row.insertCell(); 
+                actionCell.innerHTML = `<button class="btn-edit-icon" onclick="editExpense('${exp.id}')" title="Edit">✏️</button>`;
+
+                if (exp.expenseType) typeCell.setAttribute('title', exp.expenseType);
+                if (exp.person) personCell.setAttribute('title', exp.person);
+                let amtTitle = formatCurr(exp.amount);
+                if (exp.description) amtTitle += ' | ' + exp.description;
+                amtCell.setAttribute('title', amtTitle);
+                if (exp.date) dateCell.setAttribute('title', exp.date);
+            });
+        }
+
+        function updateAdmissionsTable() {
+            const tbody = document.getElementById('admissionList');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            const admissions = incomes.filter(inc => inc.incomeType === 'Student Admission');
+            let data = filteredAdmissions !== null ? filteredAdmissions : admissions;
+            if (!data.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">—— no admissions ——</td></tr>'; return; }
+            data.slice().reverse().forEach(inc => {
+                const row = tbody.insertRow();
+                const nameCell = row.insertCell(); nameCell.textContent = inc.studentName || '—';
+                const courseCell = row.insertCell(); courseCell.textContent = inc.course || '—';
+                const dateCell = row.insertCell(); dateCell.textContent = formatDate(inc.date);
+                const amtCell = row.insertCell(); amtCell.textContent = formatCurr(inc.amount);
+                const actionCell = row.insertCell(); 
+                actionCell.innerHTML = `<button class="btn-edit-icon" onclick="editIncome('${inc.id}')" title="Edit">✏️</button>`;
+
+                if (inc.studentName) nameCell.setAttribute('title', inc.studentName);
+                if (inc.course) courseCell.setAttribute('title', inc.course);
+                let amtTitle = formatCurr(inc.amount);
+                if (inc.receiptNumber) amtTitle += ' | Receipt: ' + inc.receiptNumber;
+                amtCell.setAttribute('title', amtTitle);
+                if (inc.date) dateCell.setAttribute('title', inc.date);
+            });
+        }
+
+        function updateBalance() {
+            const totalIncome = incomes.reduce((acc, i) => acc + i.amount, 0);
+            const totalExpense = expenses.reduce((acc, e) => acc + e.amount, 0);
+            document.getElementById('totalIncome').innerText = formatCurr(totalIncome);
+            document.getElementById('totalExpense').innerText = formatCurr(totalExpense);
+            document.getElementById('totalBalance').innerText = formatCurr(totalIncome - totalExpense);
+        }
+
+        // ---------- charts with month names (Jan, Feb, ...) ----------
+        function prepareMonthlyData(entries) {
+            const monthly = {};
+            entries.forEach(e => {
+                if (!e.date) return;
+                const [y, m] = e.date.split('-');
+                const key = `${y}-${m}`;
+                monthly[key] = (monthly[key] || 0) + e.amount;
+            });
+            const sortedKeys = Object.keys(monthly).sort();
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const labels = sortedKeys.map(k => {
+                const monthIndex = parseInt(k.split('-')[1], 10) - 1;
+                return monthNames[monthIndex];
+            });
+            return { labels, values: sortedKeys.map(k => monthly[k]) };
+        }
+
+        function updateExpenseTypeFilter() {
+            const types = ['ALL', ...new Set(expenses.map(e => e.expenseType))];
+            const select = document.getElementById('expenseTypeFilter');
+            select.innerHTML = types.map(t => `<option value="${t}">${t === 'ALL' ? 'All expenses' : t}</option>`).join('');
+            select.value = currentExpenseTypeFilter;
+        }
+
+        function applyExpenseFilters() {
+            const dateInput = document.getElementById('searchExpenseDate').value;
+            const typeFilter = document.getElementById('expenseTypeFilter').value;
+            currentExpenseTypeFilter = typeFilter;
+
+            let filtered = expenses;
+            if (dateInput) {
+                filtered = filtered.filter(e => e.date === dateInput);
+            }
+            if (typeFilter !== 'ALL') {
+                filtered = filtered.filter(e => e.expenseType === typeFilter);
+            }
+            filteredExpenses = filtered.length ? filtered : (dateInput || typeFilter !== 'ALL' ? filtered : null);
+            if (!dateInput && typeFilter === 'ALL') filteredExpenses = null;
+
+            updateExpenseTable();
+            updateExpenseChart(typeFilter);
+        }
+
+        function updateIncomeChart() {
+            const { labels, values } = prepareMonthlyData(incomes);
+            if (incomeChart) incomeChart.destroy();
+            const ctx = document.getElementById('incomeChart').getContext('2d');
+            incomeChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Monthly Income (₹)', data: values, backgroundColor: '#4caf50' }] },
+                options: { 
+                    responsive: true, 
+                    plugins: { legend: { labels: { color: '#fff' } } }, 
+                    scales: { y: { ticks: { color: '#ccc' } }, x: { ticks: { color: '#ccc' } } } 
+                }
+            });
+        }
+
+        function updateExpenseChart(forcedType = null) {
+            const filter = forcedType !== null ? forcedType : document.getElementById('expenseTypeFilter').value;
+            let filtered = expenses;
+            if (filter !== 'ALL') filtered = expenses.filter(e => e.expenseType === filter);
+            const { labels, values } = prepareMonthlyData(filtered);
+            if (expenseChart) expenseChart.destroy();
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            expenseChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Monthly Expense (₹)', data: values, backgroundColor: '#f44336' }] },
+                options: { 
+                    responsive: true, 
+                    plugins: { legend: { labels: { color: '#fff' } } }, 
+                    scales: { y: { ticks: { color: '#ccc' } }, x: { ticks: { color: '#ccc' } } } 
+                }
+            });
+        }
+
+        function updateCharts() {
+            updateIncomeChart();
+            updateExpenseTypeFilter();
+            applyExpenseFilters();
+        }
+
+        // ---------- filter functions ----------
+        window.filterIncomeByDate = function() {
+            const d = document.getElementById('searchIncomeDate').value;
+            filteredIncomes = d ? incomes.filter(i => i.date === d) : null;
+            updateIncomeTable();
+        };
+        window.clearIncomeFilter = function() { document.getElementById('searchIncomeDate').value = ''; filteredIncomes = null; updateIncomeTable(); };
+
+        window.filterExpenseByDate = function() {
+            applyExpenseFilters();
+        };
+        window.clearExpenseFilter = function() { 
+            document.getElementById('searchExpenseDate').value = ''; 
+            applyExpenseFilters(); 
+        };
+
+        window.filterAdmissionByDate = function() {
+            const d = document.getElementById('searchAdmissionDate').value;
+            const admissions = incomes.filter(i => i.incomeType === 'Student Admission');
+            filteredAdmissions = d ? admissions.filter(a => a.date === d) : null;
+            updateAdmissionsTable();
+        };
+        window.clearAdmissionFilter = function() { document.getElementById('searchAdmissionDate').value = ''; filteredAdmissions = null; updateAdmissionsTable(); };
+
+        window.onExpenseTypeFilterChange = function() {
+            applyExpenseFilters();
+        };
+
+        // ---------- toggle tables ----------
+        window.toggleTable = function(s) {
+            if (s==='income') { let w=document.getElementById('incomeTableWrapper'), b=document.getElementById('toggleIncomeBtn'); incomeTableVisible=!incomeTableVisible; w.classList.toggle('hidden',!incomeTableVisible); b.textContent=incomeTableVisible?'▼':'▲'; }
+            else if (s==='expense') { let w=document.getElementById('expenseTableWrapper'), b=document.getElementById('toggleExpenseBtn'); expenseTableVisible=!expenseTableVisible; w.classList.toggle('hidden',!expenseTableVisible); b.textContent=expenseTableVisible?'▼':'▲'; }
+            else if (s==='admission') { let w=document.getElementById('admissionTableWrapper'), b=document.getElementById('toggleAdmissionBtn'); admissionTableVisible=!admissionTableVisible; w.classList.toggle('hidden',!admissionTableVisible); b.textContent=admissionTableVisible?'▼':'▲'; }
+        };
+
+        // ---------- add income ----------
+        window.handleAddIncome = function() {
+            const desc = document.getElementById('incomeDesc').value.trim();
+            const amountStr = document.getElementById('incomeAmount').value;
+            const date = document.getElementById('incomeDate').value;
+            const payment = document.getElementById('incomePayment').value;
+            const type = document.getElementById('incomeType').value;
+            if (!desc || !amountStr || !date) { alert('Fill name, amount, date'); return; }
+            const amount = parseFloat(amountStr);
+            if (isNaN(amount) || amount<=0) { alert('Valid amount'); return; }
+            pendingAdmission = { ...pendingAdmission, desc, amount, date, payment, type, receipt: pendingAdmission.receipt };
+            if (type === 'Student Admission') { showAdmissionPopup(); }
+            else finalizeAddIncome();
+        };
+
+        function finalizeAddIncome() {
+            if (editingIncomeId) { incomes = incomes.filter(i => i.id !== editingIncomeId); editingIncomeId = null; }
+            const incomeObj = {
+                id: Date.now()+'-'+Math.random().toString(36).substring(2,8),
+                description: pendingAdmission.desc,
+                amount: pendingAdmission.amount,
+                date: pendingAdmission.date,
+                paymentMethod: pendingAdmission.payment,
+                incomeType: pendingAdmission.type,
+                receiptNumber: pendingAdmission.receipt
+            };
+            if (pendingAdmission.type === 'Student Admission') {
+                incomeObj.studentName = pendingAdmission.studentName;
+                incomeObj.course = pendingAdmission.course;
+            }
+            incomes.push(incomeObj);
+            document.getElementById('incomeDesc').value = '';
+            document.getElementById('incomeAmount').value = '';
+            document.getElementById('receiptNumberInput').value = '';
+            pendingAdmission = { studentName: '', course: '', date: '', amount: 0, desc: '', payment: 'Online', type: '', receipt: '' };
+            saveToStorage();
+            clearIncomeFilter(); clearAdmissionFilter();
+            updateDisplay();
+        }
+
+        window.addExpense = function() {
+            const type = document.getElementById('expenseType').value;
+            const person = document.getElementById('expensePerson').value.trim();
+            const desc = document.getElementById('expenseDesc').value.trim();
+            const amountStr = document.getElementById('expenseAmount').value;
+            const date = document.getElementById('expenseDate').value;
+            if (!person || !desc || !amountStr || !date) { alert('Fill all fields'); return; }
+            const amount = parseFloat(amountStr);
+            if (isNaN(amount) || amount<=0) { alert('Valid amount'); return; }
+            if (editingExpenseId) { expenses = expenses.filter(e => e.id !== editingExpenseId); editingExpenseId = null; }
+            expenses.push({ id: Date.now()+'-'+Math.random().toString(36).substring(2,8), expenseType: type, person, description: desc, amount, date });
+            document.getElementById('expensePerson').value = ''; document.getElementById('expenseDesc').value = ''; document.getElementById('expenseAmount').value = '';
+            saveToStorage(); 
+            document.getElementById('searchExpenseDate').value = '';
+            currentExpenseTypeFilter = 'ALL';
+            updateExpenseTypeFilter();
+            applyExpenseFilters();
+        };
+
+        // ---------- SUMMARY STATS FUNCTIONS ----------
+        function updateSummaryStats() {
+            // Filter incomes and expenses based on summary filter
+            let filteredIncomesForSummary = incomes;
+            let filteredExpensesForSummary = expenses;
+
+            if (summaryFilterValue) {
+                if (summaryFilterType === 'date') {
+                    filteredIncomesForSummary = incomes.filter(inc => inc.date === summaryFilterValue);
+                    filteredExpensesForSummary = expenses.filter(exp => exp.date === summaryFilterValue);
+                } else if (summaryFilterType === 'month') {
+                    filteredIncomesForSummary = incomes.filter(inc => inc.date.startsWith(summaryFilterValue));
+                    filteredExpensesForSummary = expenses.filter(exp => exp.date.startsWith(summaryFilterValue));
+                } else if (summaryFilterType === 'year') {
+                    filteredIncomesForSummary = incomes.filter(inc => inc.date.startsWith(summaryFilterValue));
+                    filteredExpensesForSummary = expenses.filter(exp => exp.date.startsWith(summaryFilterValue));
+                }
+            }
+
+            // Total Admissions count (only from Student Admission type)
+            const totalAdmissionsCount = filteredIncomesForSummary.filter(inc => inc.incomeType === 'Student Admission').length;
+
+            // Online and Offline amounts (from all incomes)
+            const onlineIncomes = filteredIncomesForSummary.filter(inc => inc.paymentMethod === 'Online');
+            const offlineIncomes = filteredIncomesForSummary.filter(inc => inc.paymentMethod === 'Offline');
+            const onlineAmount = onlineIncomes.reduce((sum, inc) => sum + inc.amount, 0);
+            const offlineAmount = offlineIncomes.reduce((sum, inc) => sum + inc.amount, 0);
+
+            // Total Collection = sum of all incomes
+            const totalCollection = filteredIncomesForSummary.reduce((sum, inc) => sum + inc.amount, 0);
+
+            // Total Expenses
+            const totalExpenses = filteredExpensesForSummary.reduce((sum, exp) => sum + exp.amount, 0);
+
+            // Update DOM
+            document.getElementById('summaryTotalAdmissions').innerText = totalAdmissionsCount;
+            document.getElementById('summaryOnlineAmount').innerText = formatCurr(onlineAmount);
+            document.getElementById('summaryOnlineCount').innerText = `(${onlineIncomes.length})`;
+            document.getElementById('summaryOfflineAmount').innerText = formatCurr(offlineAmount);
+            document.getElementById('summaryOfflineCount').innerText = `(${offlineIncomes.length})`;
+            document.getElementById('summaryTotalCollection').innerText = formatCurr(totalCollection);
+            document.getElementById('summaryTotalExpenses').innerText = formatCurr(totalExpenses);
+        }
+
+        window.applySummaryFilter = function() {
+            const type = document.getElementById('summaryFilterType').value;
+            let value = '';
+            if (type === 'date') value = document.getElementById('summaryFilterDate').value;
+            else if (type === 'month') value = document.getElementById('summaryFilterMonth').value;
+            else if (type === 'year') value = document.getElementById('summaryFilterYear').value;
+            summaryFilterType = type;
+            summaryFilterValue = value;
+            updateSummaryStats();
+        };
+
+        window.clearSummaryFilter = function() {
+            document.getElementById('summaryFilterDate').value = '';
+            document.getElementById('summaryFilterMonth').value = '';
+            document.getElementById('summaryFilterYear').value = '';
+            summaryFilterType = 'date';
+            summaryFilterValue = '';
+            // Reset input visibility
+            document.getElementById('summaryFilterDate').style.display = 'inline-block';
+            document.getElementById('summaryFilterMonth').style.display = 'none';
+            document.getElementById('summaryFilterYear').style.display = 'none';
+            document.getElementById('summaryFilterType').value = 'date';
+            updateSummaryStats();
+        };
+
+        function initSummaryFilterToggle() {
+            const typeSelect = document.getElementById('summaryFilterType');
+            if (typeSelect) {
+                typeSelect.addEventListener('change', function(e) {
+                    const type = e.target.value;
+                    document.getElementById('summaryFilterDate').style.display = type === 'date' ? 'inline-block' : 'none';
+                    document.getElementById('summaryFilterMonth').style.display = type === 'month' ? 'inline-block' : 'none';
+                    document.getElementById('summaryFilterYear').style.display = type === 'year' ? 'inline-block' : 'none';
+                });
+            }
+        }
+
+        function updateDisplay() {
+            updateIncomeTable();
+            updateExpenseTable();
+            updateAdmissionsTable();
+            updateBalance();
+            updateCharts();
+            updateSummaryStats(); // always update summary
+        }
+
+        // ---------- init ----------
+        window.onload = function() {
+            loadFromStorage();
+            updateDisplay();
+            document.getElementById('toggleIncomeBtn').textContent = '▼';
+            document.getElementById('toggleExpenseBtn').textContent = '▼';
+            document.getElementById('toggleAdmissionBtn').textContent = '▼';
+            initSummaryFilterToggle();
+        };
+        window.onclick = function(e) {
+            if (e.target === document.getElementById('receiptPopup')) closeReceiptPopup();
+            if (e.target === document.getElementById('admissionPopup')) closeAdmissionPopup();
+            if (e.target === document.getElementById('passwordPopup')) closePasswordPopup();
+            if (e.target === document.getElementById('editPopup')) closeEditPopup();
+        };
+    })();
+</script>
+</body>
+</html>
